@@ -5,11 +5,13 @@ import hello.hello_spring.repository.MemberRepository;
 import hello.hello_spring.repository.MemoryMemberRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
 
 //@Service //스프링이 올라올때 컨트롤러에 멤버서비스를 등록해줌
+@Transactional
 public class MemberService {
     /*ctrl + shift + t를 누르면 새테스트케이스 작성가능*/
 
@@ -25,6 +27,18 @@ public class MemberService {
 
     //회원가입
     public Long join(Member member) {
+
+        long start = System.currentTimeMillis();
+        try {
+            validateDuplicateMember(member);
+            memberRepository.save(member);
+            return member.getId();
+        }finally {
+            long finish = System.currentTimeMillis();
+            long timeMs = finish - start;
+            System.out.println("join=" + timeMs + "ms" );
+        }
+
         //같은 이름의 중복회원은 안된다.
         //optional은 null일 가능성이 있으면 감싸서 사용하면 되고, optional 말고 다른 방법은
 /*        Optional<Member> result = memberRepository.findByName(member.getName());
@@ -34,9 +48,9 @@ public class MemberService {
 
         //이런 방법도 있음
         //Ctrl + Alt + M
-        validateDuplicateMember(member); //중복회원검증
+      /*  validateDuplicateMember(member); //중복회원검증
         memberRepository.save(member);
-        return member.getId();
+        return member.getId();*/
     }
 
     private void validateDuplicateMember(Member member) {
